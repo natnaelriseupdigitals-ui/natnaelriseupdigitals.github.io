@@ -265,6 +265,7 @@ export const Home: React.FC<HomeProps> = ({ setPage }) => {
                 muted 
                 loop 
                 playsInline
+                poster="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1920&q=80"
                 className="w-full h-full object-cover scale-110 opacity-80"
             >
                 <source src="https://www.dropbox.com/scl/fi/tz20d2xwyzl770wkhehkx/IMG_0669-2.mp4?rlkey=wptpf6cnzoz5vbjvzkfh2si8t&st=r71hja1x&raw=1" type="video/mp4" />
