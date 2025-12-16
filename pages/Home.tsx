@@ -67,10 +67,19 @@ export const Home: React.FC<HomeProps> = ({ setPage }) => {
   const [isAutoPlay, setIsAutoPlay] = useState(true);
   const autoPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
+    
+    // Ensure video plays
+    if (videoRef.current) {
+        videoRef.current.defaultMuted = true;
+        videoRef.current.muted = true;
+        videoRef.current.play().catch(e => console.error("Video autoplay blocked:", e));
+    }
+
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -127,10 +136,11 @@ export const Home: React.FC<HomeProps> = ({ setPage }) => {
       <section className="relative h-screen w-full overflow-hidden">
         {/* Background Video */}
         <div className="absolute inset-0 w-full h-full bg-black">
-            <div className="absolute inset-0 bg-black/40 z-10 mix-blend-multiply"></div>
+            <div className="absolute inset-0 bg-black/50 z-10"></div>
             <div className="absolute inset-0 bg-gradient-to-t from-orbit-black via-transparent to-transparent z-10"></div>
             
             <video 
+                ref={videoRef}
                 autoPlay 
                 muted 
                 loop 

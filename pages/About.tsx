@@ -1,8 +1,19 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Reveal } from '../components/Reveal';
 import { ArrowDown } from 'lucide-react';
 
 export const About: React.FC = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    // Ensure video plays
+    if (videoRef.current) {
+        videoRef.current.defaultMuted = true;
+        videoRef.current.muted = true;
+        videoRef.current.play().catch(e => console.error("Video autoplay blocked:", e));
+    }
+  }, []);
+
   return (
     <div className="bg-orbit-black min-h-screen">
       
@@ -12,6 +23,7 @@ export const About: React.FC = () => {
          <div className="absolute inset-0 bg-gradient-to-t from-orbit-black via-transparent to-transparent z-10"></div>
          
          <video 
+            ref={videoRef}
             autoPlay 
             muted 
             loop 
