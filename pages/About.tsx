@@ -6,8 +6,8 @@ export const About: React.FC = () => {
   return (
     <div className="bg-orbit-black min-h-screen">
       
-      {/* Cinematic Hero Section - Matches Home Page */}
-      <section className="relative h-[80vh] md:h-screen w-full overflow-hidden mb-20">
+      {/* Cinematic Hero Section - Video Only */}
+      <section className="relative h-screen w-full overflow-hidden">
          <div className="absolute inset-0 bg-black/50 z-10"></div>
          <div className="absolute inset-0 bg-gradient-to-t from-orbit-black via-transparent to-transparent z-10"></div>
          
@@ -16,14 +16,23 @@ export const About: React.FC = () => {
             muted 
             loop 
             playsInline
-            poster="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1920&q=80"
             className="w-full h-full object-cover scale-110 opacity-80"
         >
             <source src="https://www.dropbox.com/scl/fi/tz20d2xwyzl770wkhehkx/IMG_0669-2.mp4?rlkey=wptpf6cnzoz5vbjvzkfh2si8t&st=r71hja1x&raw=1" type="video/mp4" />
             Your browser does not support the video tag.
         </video>
 
-         <div className="relative z-20 container mx-auto px-6 h-full flex flex-col justify-center items-start pt-20">
+         {/* Scroll Indicator */}
+         <div className="absolute bottom-10 left-0 w-full flex justify-center z-20">
+            <div className="flex flex-col items-center gap-2 animate-bounce">
+                <span className="text-[10px] uppercase tracking-[0.3em] text-white/50 font-bold pl-[0.3em]">Scroll</span>
+                <ArrowDown className="text-white/50" size={20} />
+            </div>
+         </div>
+      </section>
+
+      {/* Intro Text Section - Appears on Scroll */}
+      <section className="py-20 md:py-32 container mx-auto px-6 flex flex-col justify-center items-start">
              <Reveal>
                 <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tighter mb-4 leading-none text-white">
                     We are<br />Orbit Visuals.
@@ -34,16 +43,6 @@ export const About: React.FC = () => {
                     A collective of creators pushing the boundaries of what's possible in digital media.
                 </p>
              </Reveal>
-         </div>
-
-         {/* Scroll Indicator */}
-         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 animate-bounce">
-            <div className="flex flex-col items-center gap-2">
-                {/* Added pl-[0.3em] to visually center the text due to wide tracking */}
-                <span className="text-[10px] uppercase tracking-[0.3em] text-white/50 font-bold pl-[0.3em]">Scroll</span>
-                <ArrowDown className="text-white/50" size={20} />
-            </div>
-         </div>
       </section>
 
       {/* Manifesto */}

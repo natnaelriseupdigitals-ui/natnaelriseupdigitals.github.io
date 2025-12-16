@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Page } from '../types';
 import { Reveal } from '../components/Reveal';
-import { Aperture, Film, Heart, ArrowRight, ChevronLeft, ChevronRight, Grid, ArrowUpRight, MoveRight, ArrowDown, ArrowLeft } from 'lucide-react';
+import { Aperture, Film, Heart, ArrowRight, ChevronLeft, ChevronRight, ArrowDown, ArrowUpRight, ArrowLeft } from 'lucide-react';
 
 interface HomeProps {
   setPage: (page: Page) => void;
@@ -62,194 +62,64 @@ const featuredWorks = [
 export const Home: React.FC<HomeProps> = ({ setPage }) => {
   const [selectedWorkIndex, setSelectedWorkIndex] = useState<number | null>(null);
   
-  // Drag to Scroll State
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  // Refs for animation loop values to avoid dependency cycles
-  const isDraggingRef = useRef(false);
-  const startX = useRef(0);
-  const scrollLeft = useRef(0);
-  const animationFrameId = useRef<number>(0);
-  const lastInteractionTime = useRef<number>(0);
-  
-  // React State for UI updates (cursor, clicks)
-  const [isDraggingState, setIsDraggingState] = useState(false);
-  
-  // Custom Cursor State
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
-  const [showDragCursor, setShowDragCursor] = useState(false);
+  // --- Infinite Carousel State ---
+  const [activeIndex, setActiveIndex] = useState(10000);
+  const [isAutoPlay, setIsAutoPlay] = useState(true);
+  const autoPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
-  // Modal Swipe Logic
-  const modalDragStartX = useRef(0);
-  const isModalDragging = useRef(false);
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-  // --- Keyboard Navigation ---
-  const handlePrev = () => {
+  // Auto Switch
+  useEffect(() => {
+    if (!isAutoPlay) return;
+
+    const interval = setInterval(() => {
+        setActiveIndex(prev => prev + 1);
+    }, 1000); // 1 second interval
+
+    return () => clearInterval(interval);
+  }, [isAutoPlay]);
+
+  // Helper to get actual data index
+  const getVisibleData = (index: number) => {
+      const dataIndex = (index % featuredWorks.length + featuredWorks.length) % featuredWorks.length;
+      return featuredWorks[dataIndex];
+  };
+
+  const handleManualInteraction = (action: () => void) => {
+      action();
+      setIsAutoPlay(false);
+      
+      if (autoPlayTimeoutRef.current) clearTimeout(autoPlayTimeoutRef.current);
+      
+      // Resume after 3 seconds
+      autoPlayTimeoutRef.current = setTimeout(() => {
+          setIsAutoPlay(true);
+      }, 3000);
+  };
+
+  const handlePrev = () => handleManualInteraction(() => setActiveIndex(prev => prev - 1));
+  const handleNext = () => handleManualInteraction(() => setActiveIndex(prev => prev + 1));
+
+  // --- Modal Navigation ---
+  const handleModalPrev = () => {
     if (selectedWorkIndex !== null) {
       setSelectedWorkIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : prev));
     }
   };
 
-  const handleNext = () => {
+  const handleModalNext = () => {
     if (selectedWorkIndex !== null) {
       setSelectedWorkIndex((prev) => (prev !== null && prev < featuredWorks.length - 1 ? prev + 1 : prev));
     }
   };
 
-  const handleKeyDown = (e: KeyboardEvent) => {
-      if (selectedWorkIndex !== null) {
-          if (e.key === 'ArrowLeft') handlePrev();
-          if (e.key === 'ArrowRight') handleNext();
-          if (e.key === 'Escape') setSelectedWorkIndex(null);
-      }
-  };
-
-  useEffect(() => {
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedWorkIndex]);
-
-
-  // --- Auto Scroll & Drag Logic ---
-  useEffect(() => {
-    const animate = () => {
-        const scrollContainer = scrollContainerRef.current;
-        // Only scroll if not dragging AND 2 seconds passed since last interaction
-        if (scrollContainer && !isDraggingRef.current && Date.now() - lastInteractionTime.current > 2000) {
-            // Auto-scroll speed
-            scrollContainer.scrollLeft += 1; // 1px per frame (approx 60px/sec)
-
-            // Infinite loop reset
-            const maxScroll = scrollContainer.scrollWidth / 2;
-            
-            if (scrollContainer.scrollLeft >= maxScroll) {
-                scrollContainer.scrollLeft = 0;
-            } else if (scrollContainer.scrollLeft <= 0) {
-                 // allow dragging backwards to loop
-            }
-        }
-        animationFrameId.current = requestAnimationFrame(animate);
-    };
-
-    animationFrameId.current = requestAnimationFrame(animate);
-
-    return () => cancelAnimationFrame(animationFrameId.current);
-  }, []);
-
-  // --- Mouse Handlers (Desktop) ---
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!scrollContainerRef.current) return;
-    isDraggingRef.current = true;
-    startX.current = e.pageX - scrollContainerRef.current.offsetLeft;
-    scrollLeft.current = scrollContainerRef.current.scrollLeft;
-    lastInteractionTime.current = Date.now();
-  };
-
-  const handleMouseUp = () => {
-    isDraggingRef.current = false;
-    lastInteractionTime.current = Date.now();
-    if (isDraggingState) {
-        setTimeout(() => setIsDraggingState(false), 50);
-    } else {
-        setIsDraggingState(false);
-    }
-  };
-  
-  const handleMouseLeave = () => {
-    isDraggingRef.current = false;
-    setIsDraggingState(false);
-    setShowDragCursor(false);
-    lastInteractionTime.current = Date.now();
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    setCursorPos({ x: e.clientX, y: e.clientY });
-
-    if (!isDraggingRef.current || !scrollContainerRef.current) return;
-    
-    e.preventDefault();
-    const x = e.pageX - scrollContainerRef.current.offsetLeft;
-    
-    // Check if user moved mouse enough to consider it a drag
-    if (Math.abs(x - startX.current) > 5) {
-        setIsDraggingState(true);
-        lastInteractionTime.current = Date.now();
-        
-        const walk = (x - startX.current) * 2; // Drag speed multiplier
-        let targetScroll = scrollLeft.current - walk;
-        const maxScroll = scrollContainerRef.current.scrollWidth / 2;
-
-        if (targetScroll >= maxScroll) {
-            targetScroll = targetScroll - maxScroll;
-            scrollLeft.current = scrollLeft.current - maxScroll; 
-        } else if (targetScroll <= 0) {
-            targetScroll = targetScroll + maxScroll;
-            scrollLeft.current = scrollLeft.current + maxScroll;
-        }
-
-        scrollContainerRef.current.scrollLeft = targetScroll;
-    }
-  };
-
-  // --- Touch Handlers (Mobile) ---
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (!scrollContainerRef.current) return;
-    isDraggingRef.current = true;
-    lastInteractionTime.current = Date.now();
-    // For touch, we track pageX directly to calculate delta for click vs drag detection
-    startX.current = e.touches[0].pageX;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDraggingRef.current) return;
-    lastInteractionTime.current = Date.now();
-    
-    // Check distance to determine if this is a drag (blocks clicks)
-    // We allow native scrolling to handle the movement, we just track state
-    const currentX = e.touches[0].pageX;
-    if (Math.abs(currentX - startX.current) > 10) {
-        setIsDraggingState(true);
-    }
-  };
-
-  const handleTouchEnd = () => {
-    isDraggingRef.current = false;
-    lastInteractionTime.current = Date.now();
-    
-    if (isDraggingState) {
-        // Was dragging, prevent click
-        setTimeout(() => setIsDraggingState(false), 50);
-    } else {
-        // Was a tap, allow click immediately
-        setIsDraggingState(false);
-    }
-  };
-
-  // --- Modal Swipe Handlers ---
-  const handleModalMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
-    isModalDragging.current = true;
-    const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
-    modalDragStartX.current = clientX;
-  };
-
-  const handleModalMouseUp = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isModalDragging.current) return;
-    isModalDragging.current = false;
-    
-    const clientX = 'changedTouches' in e ? e.changedTouches[0].clientX : (e as React.MouseEvent).clientX;
-    const diff = modalDragStartX.current - clientX;
-    
-    if (diff > 50) {
-        handleNext();
-    } else if (diff < -50) {
-        handlePrev();
-    }
-  };
-
-  const handleWorkClick = (index: number) => {
-    if (!isDraggingState) {
-        setSelectedWorkIndex(index);
-    }
-  };
+  const isMobile = windowWidth < 768;
 
   return (
     <div className="w-full">
@@ -265,7 +135,6 @@ export const Home: React.FC<HomeProps> = ({ setPage }) => {
                 muted 
                 loop 
                 playsInline
-                poster="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1920&q=80"
                 className="w-full h-full object-cover scale-110 opacity-80"
             >
                 <source src="https://www.dropbox.com/scl/fi/tz20d2xwyzl770wkhehkx/IMG_0669-2.mp4?rlkey=wptpf6cnzoz5vbjvzkfh2si8t&st=r71hja1x&raw=1" type="video/mp4" />
@@ -282,7 +151,6 @@ export const Home: React.FC<HomeProps> = ({ setPage }) => {
                 </h1>
             </Reveal>
 
-            {/* "Engineered." - Larger, Clean, Wide Tracking */}
             <Reveal delay={0.4}>
                 <div className="flex items-center gap-6 mt-2 mb-10 ml-2">
                     <div className="w-16 h-[2px] bg-white"></div>
@@ -301,9 +169,8 @@ export const Home: React.FC<HomeProps> = ({ setPage }) => {
         </div>
 
         {/* Scroll Indicator */}
-         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 animate-bounce">
-            <div className="flex flex-col items-center gap-2">
-                {/* Added pl-[0.3em] to visually center the text due to wide tracking */}
+         <div className="absolute bottom-10 left-0 w-full flex justify-center z-20">
+            <div className="flex flex-col items-center gap-2 animate-bounce">
                 <span className="text-[10px] uppercase tracking-[0.3em] text-white/50 font-bold pl-[0.3em]">Scroll</span>
                 <ArrowDown className="text-white/50" size={20} />
             </div>
@@ -335,13 +202,9 @@ export const Home: React.FC<HomeProps> = ({ setPage }) => {
         </div>
       </section>
 
-      {/* Featured Work Scrolling Section */}
-      <section 
-        className="py-20 bg-orbit-gray relative overflow-hidden" 
-        onMouseEnter={() => setShowDragCursor(true)}
-        onMouseLeave={handleMouseLeave}
-      >
-        <div className="container mx-auto px-6 mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+      {/* Featured Work - Main Container */}
+      <section className="py-20 bg-orbit-gray relative overflow-hidden">
+        <div className="container mx-auto px-6 mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 relative z-30">
             <Reveal>
                 <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-white">Featured Work</h2>
             </Reveal>
@@ -355,67 +218,74 @@ export const Home: React.FC<HomeProps> = ({ setPage }) => {
             </Reveal>
         </div>
 
-        {/* Custom Drag Cursor (Desktop) */}
-        {/* Render conditionally based on showDragCursor to ensure it doesn't float elsewhere */}
-        <div 
-            className={`hidden md:flex fixed z-[60] w-24 h-24 bg-white rounded-full items-center justify-center pointer-events-none transition-transform duration-200 ease-out mix-blend-difference ${showDragCursor ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`}
-            style={{ 
-                left: cursorPos.x, 
-                top: cursorPos.y,
-                transform: `translate(-50%, -50%) scale(${showDragCursor ? 1 : 0})`
-            }}
-        >
-            <span className="text-black font-black text-sm tracking-widest uppercase">Drag</span>
-        </div>
+        {/* --- UNIFIED CAROUSEL (Mobile & Desktop) --- */}
+        <div className="relative h-[500px] md:h-[600px] w-full flex items-center justify-center perspective-1000">
+            
+            {/* Arrows */}
+            <button 
+                onClick={handlePrev}
+                className="absolute left-4 md:left-12 z-40 p-2 md:p-4 rounded-full bg-black/50 backdrop-blur-md border border-white/10 text-white hover:bg-white hover:text-black transition-all duration-300 group"
+            >
+                <ChevronLeft size={24} className="group-hover:-translate-x-1 transition-transform md:w-8 md:h-8" />
+            </button>
+            <button 
+                onClick={handleNext}
+                className="absolute right-4 md:right-12 z-40 p-2 md:p-4 rounded-full bg-black/50 backdrop-blur-md border border-white/10 text-white hover:bg-white hover:text-black transition-all duration-300 group"
+            >
+                <ChevronRight size={24} className="group-hover:translate-x-1 transition-transform md:w-8 md:h-8" />
+            </button>
 
-        {/* Mobile Scroll Indicator Overlay */}
-        <div className="md:hidden absolute right-6 top-[280px] z-20 pointer-events-none animate-pulse flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-widest text-white drop-shadow-md">Drag</span>
-            <div className="w-8 h-8 rounded-full border border-white flex items-center justify-center bg-black/30 backdrop-blur-sm">
-                <MoveRight size={14} />
-            </div>
-        </div>
+            {/* Track Items */}
+            <div className="relative w-full h-full">
+                {[-2, -1, 0, 1, 2].map((offset) => {
+                    const index = activeIndex + offset;
+                    const work = getVisibleData(index);
+                    const isCenter = offset === 0;
+                    
+                    // Responsive Scaling & Spacing
+                    // Desktop: Fixed pixel values
+                    // Mobile: Viewport width based values
+                    const spacing = isMobile ? windowWidth * 0.65 : 450; 
+                    const itemWidth = isMobile ? '65vw' : '400px';
 
-        {/* Draggable Strip */}
-        <div 
-            ref={scrollContainerRef}
-            onMouseDown={handleMouseDown}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseLeave}
-            onMouseMove={handleMouseMove}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            className="w-full overflow-x-auto hide-scrollbar cursor-none active:cursor-grabbing touch-pan-x"
-            style={{ userSelect: 'none', WebkitOverflowScrolling: 'touch' }} 
-        >
-            <div className="flex w-max px-6 md:px-0">
-                {/* 
-                  We render the list twice to allow for infinite scrolling effect.
-                  JS detects when we hit the end of the first list and snaps back to 0.
-                */}
-                {[...featuredWorks, ...featuredWorks].map((work, index) => (
-                    <div 
-                        key={`${work.id}-${index}`}
-                        onClick={() => handleWorkClick(index % featuredWorks.length)}
-                        className={`
-                            relative w-[300px] md:w-[400px] aspect-[4/5] mr-6 md:mx-4 
-                            overflow-hidden bg-gray-900 flex-shrink-0 transition-transform duration-300 
-                            ${isDraggingState ? 'scale-[0.98]' : 'hover:scale-[1.02]'}
-                        `}
-                    >
-                        <img 
-                            src={work.img} 
-                            alt={work.title} 
-                            draggable={false}
-                            className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity duration-500 pointer-events-none" 
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                             <p className="text-orange-500 text-xs font-bold uppercase tracking-widest mb-1">{work.category}</p>
-                             <h3 className="text-2xl font-bold text-white uppercase tracking-tight">{work.title}</h3>
+                    const xPos = offset * spacing;
+                    
+                    let scale = isCenter ? 1.15 : (Math.abs(offset) === 1 ? 0.9 : 0.8);
+                    let opacity = isCenter ? 1 : (Math.abs(offset) === 1 ? 0.6 : 0.3);
+                    let zIndex = isCenter ? 20 : (Math.abs(offset) === 1 ? 10 : 0);
+                    let blur = isCenter ? 0 : (Math.abs(offset) === 1 ? 1 : 2);
+
+                    return (
+                        <div
+                            key={index}
+                            onClick={() => isCenter && setSelectedWorkIndex((index % featuredWorks.length + featuredWorks.length) % featuredWorks.length)}
+                            className="absolute top-1/2 left-1/2 bg-gray-900 shadow-2xl shadow-black cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
+                            style={{
+                                width: itemWidth,
+                                aspectRatio: '4/5',
+                                transform: `translate(-50%, -50%) translateX(${xPos}px) scale(${scale})`,
+                                opacity: opacity,
+                                zIndex: zIndex,
+                                filter: `grayscale(${isCenter ? '0%' : '100%'}) blur(${blur}px)`,
+                            }}
+                        >
+                            <div className="w-full h-full relative overflow-hidden group rounded-sm">
+                                <img 
+                                    src={work.img} 
+                                    alt={work.title} 
+                                    className="w-full h-full object-cover" 
+                                />
+                                <div className={`absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent flex flex-col justify-end p-6 md:p-8 transition-opacity duration-300 ${isCenter ? 'opacity-100' : 'opacity-0'}`}>
+                                    <p className="text-orange-500 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-2">{work.category}</p>
+                                    <h3 className="text-xl md:text-3xl font-black text-white uppercase tracking-tight">{work.title}</h3>
+                                    <div className="flex items-center gap-2 mt-4 text-[10px] md:text-xs font-bold uppercase tracking-widest text-white/80">
+                                        <span>View Case</span> <ArrowUpRight size={14} />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
 
@@ -431,7 +301,7 @@ export const Home: React.FC<HomeProps> = ({ setPage }) => {
 
       {/* Marquee / Brand Ticker */}
       <section className="py-12 md:py-16 border-y border-gray-900 overflow-hidden bg-black">
-         <div className="relative w-full flex overflow-x-hidden">
+         <div className="relative w-full flex overflow-x-hidden hide-scrollbar">
             <div className="animate-marquee whitespace-nowrap">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                     <span key={i} className="text-2xl md:text-4xl font-bold text-white/30 uppercase tracking-[0.2em] px-12 md:px-20 select-none">
@@ -448,26 +318,21 @@ export const Home: React.FC<HomeProps> = ({ setPage }) => {
       </section>
 
 
-      {/* --- CAROUSEL MODAL (Same as Works.tsx) --- */}
+      {/* --- CAROUSEL MODAL (Kept same) --- */}
        <div 
         className={`fixed inset-0 z-[60] bg-orbit-black flex flex-col justify-center overflow-hidden transition-all duration-500 ${selectedWorkIndex !== null ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
-        onMouseDown={handleModalMouseDown}
-        onMouseUp={handleModalMouseUp}
-        onTouchStart={handleModalMouseDown}
-        onTouchEnd={handleModalMouseUp}
       >
         <style>{`
             :root {
-            /* Carousel specific variables for 4:5 Aspect Ratio */
             --item-width: 80vw;
             --gap: 5vw;
-            --offset-start: 10vw; /* (100 - 80) / 2 */
+            --offset-start: 10vw;
             }
             @media (min-width: 768px) {
             :root {
-                --item-width: 35vw; /* Narrower width for portrait images on desktop to fit height */
+                --item-width: 35vw;
                 --gap: 6vw;
-                --offset-start: 32.5vw; /* (100 - 35) / 2 */
+                --offset-start: 32.5vw;
             }
             }
         `}</style>
@@ -484,8 +349,7 @@ export const Home: React.FC<HomeProps> = ({ setPage }) => {
                 <div className="p-2 border border-white/20 rounded-full group-hover:bg-white group-hover:text-black transition-all">
                     <ArrowLeft size={20} />
                 </div>
-                {/* Matches text logic from Works page ("Back to Gallery"), but here it effectively closes the modal */}
-                <span className="hidden md:inline">Back to Gallery</span>
+                <span className="hidden md:inline">Close</span>
             </button>
 
             {selectedWorkIndex !== null && (
@@ -504,9 +368,9 @@ export const Home: React.FC<HomeProps> = ({ setPage }) => {
         <div className="relative z-10 w-full h-[70vh] md:h-[80vh] flex items-center mt-12 md:mt-0">
             
             {/* Left Arrow */}
-            {selectedWorkIndex !== null && selectedWorkIndex > 0 && (
+            {selectedWorkIndex !== null && (
             <button 
-                onClick={handlePrev}
+                onClick={handleModalPrev}
                 className="absolute left-4 md:left-12 z-30 p-4 rounded-full bg-black/50 backdrop-blur-md border border-white/10 text-white hover:bg-white hover:text-black transition-all duration-300 group hidden md:block"
             >
                 <ChevronLeft size={32} className="group-hover:-translate-x-1 transition-transform" />
@@ -514,9 +378,9 @@ export const Home: React.FC<HomeProps> = ({ setPage }) => {
             )}
 
             {/* Right Arrow */}
-            {selectedWorkIndex !== null && selectedWorkIndex < featuredWorks.length - 1 && (
+            {selectedWorkIndex !== null && (
             <button 
-                onClick={handleNext}
+                onClick={handleModalNext}
                 className="absolute right-4 md:right-12 z-30 p-4 rounded-full bg-black/50 backdrop-blur-md border border-white/10 text-white hover:bg-white hover:text-black transition-all duration-300 group hidden md:block"
             >
                 <ChevronRight size={32} className="group-hover:translate-x-1 transition-transform" />
@@ -549,10 +413,8 @@ export const Home: React.FC<HomeProps> = ({ setPage }) => {
                                 alt={work.title} 
                                 className="w-full h-full object-cover"
                             />
-                            {/* Overlay */}
                             <div className={`absolute inset-0 bg-black/20 transition-opacity duration-500 ${index === selectedWorkIndex ? 'opacity-0' : 'opacity-100'}`}></div>
                             
-                            {/* Project Info - Only visible on active */}
                             <div className={`absolute bottom-0 left-0 w-full p-6 md:p-8 bg-gradient-to-t from-black via-black/50 to-transparent flex flex-col justify-end items-start transition-opacity duration-500 ${index === selectedWorkIndex ? 'opacity-100 delay-300' : 'opacity-0'}`}>
                                 <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter mb-2">{work.title}</h2>
                                 <div className="flex flex-wrap items-center gap-4 text-xs md:text-sm text-gray-300 uppercase tracking-widest">
@@ -560,10 +422,6 @@ export const Home: React.FC<HomeProps> = ({ setPage }) => {
                                     <span className="w-1 h-1 bg-white rounded-full"></span>
                                     <span>{work.year}</span>
                                 </div>
-                                
-                                <button className="mt-6 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white border-b border-white pb-1 hover:text-gray-300 hover:border-gray-300 transition-all">
-                                    View Full Case <ArrowUpRight size={14} />
-                                </button>
                             </div>
                         </div>
                     </div>

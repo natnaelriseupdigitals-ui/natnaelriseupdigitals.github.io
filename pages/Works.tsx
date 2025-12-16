@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Reveal } from '../components/Reveal';
-import { ChevronLeft, ChevronRight, ArrowUpRight, Grid, MoveRight, ArrowLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowUpRight, MoveRight, ArrowLeft } from 'lucide-react';
 
 // Data with 4:5 aspect ratio images and requested categories
 const works = [
@@ -74,10 +74,6 @@ export const Works: React.FC = () => {
   const [viewMode, setViewMode] = useState<'gallery' | 'carousel'>('gallery');
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Custom Cursor & Drag State
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
-  const [showDragCursor, setShowDragCursor] = useState(false);
-  
   // Drag Logic Refs
   const dragStartX = useRef(0);
   const isDragging = useRef(false);
@@ -86,7 +82,6 @@ export const Works: React.FC = () => {
   useEffect(() => {
     if (viewMode === 'gallery') {
        window.scrollTo({ top: 0, behavior: 'smooth' });
-       setShowDragCursor(false);
     }
   }, [viewMode]);
 
@@ -120,11 +115,7 @@ export const Works: React.FC = () => {
       return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeIndex, viewMode]);
 
-  // --- Mouse & Touch Handlers for Drag/Swipe ---
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    setCursorPos({ x: e.clientX, y: e.clientY });
-  };
+  // --- Mouse & Touch Handlers for Swipe ---
 
   const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
     isDragging.current = true;
@@ -154,10 +145,10 @@ export const Works: React.FC = () => {
       <div 
         className={`w-full transition-opacity duration-500 ease-in-out ${viewMode === 'gallery' ? 'opacity-100' : 'opacity-0 pointer-events-none fixed inset-0'}`}
       >
-          <div className="pt-32 pb-20 container mx-auto px-6">
+          <div className="pt-24 pb-20 container mx-auto px-4 md:px-6">
               <Reveal width="100%">
-                <div className="flex justify-between items-end mb-16">
-                    <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tighter text-white">
+                <div className="flex justify-between items-end mb-8 md:mb-16">
+                    <h1 className="text-4xl md:text-8xl font-black uppercase tracking-tighter text-white">
                         Selected<br />Works
                     </h1>
                     <div className="hidden md:block text-gray-400 text-sm tracking-widest uppercase">
@@ -166,9 +157,10 @@ export const Works: React.FC = () => {
                 </div>
               </Reveal>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Mobile: 2-col grid with tight gap (Photos App style). Desktop: 4-col grid. */}
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-6">
                   {works.map((work, index) => (
-                      <Reveal key={work.id} delay={index * 0.1} width="100%">
+                      <Reveal key={work.id} delay={index * 0.05} width="100%">
                           <div 
                             onClick={() => handleImageClick(index)}
                             className="w-full group relative cursor-pointer overflow-hidden aspect-[4/5] bg-gray-900"
@@ -176,11 +168,13 @@ export const Works: React.FC = () => {
                               <img 
                                 src={work.img} 
                                 alt={work.title} 
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-90 group-hover:opacity-100"
+                                className="w-full h-full object-cover transition-transform duration-700 md:group-hover:scale-105 opacity-90 md:group-hover:opacity-100"
                               />
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                                  <p className="text-orange-500 text-xs font-bold uppercase tracking-widest mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">{work.category}</p>
-                                  <h3 className="text-xl font-bold text-white uppercase tracking-tight transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-100">{work.title}</h3>
+                              
+                              {/* Overlay - Visible on Mobile (gradient), Hidden on Desktop until Hover */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-4 md:p-6 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
+                                  <p className="text-orange-500 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1 md:mb-2 md:transform md:translate-y-4 md:group-hover:translate-y-0 transition-transform duration-300 delay-75">{work.category}</p>
+                                  <h3 className="text-sm md:text-xl font-bold text-white uppercase tracking-tight md:transform md:translate-y-4 md:group-hover:translate-y-0 transition-transform duration-300 delay-100">{work.title}</h3>
                               </div>
                           </div>
                       </Reveal>
@@ -193,13 +187,10 @@ export const Works: React.FC = () => {
       {/* --- CAROUSEL VIEW --- */}
       <div 
         className={`fixed inset-0 z-50 bg-orbit-black flex flex-col justify-center overflow-hidden transition-all duration-500 ${viewMode === 'carousel' ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
-        onMouseMove={handleMouseMove}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onTouchStart={handleMouseDown}
         onTouchEnd={handleMouseUp}
-        onMouseEnter={() => setShowDragCursor(true)}
-        onMouseLeave={() => setShowDragCursor(false)}
       >
         <style>{`
             :root {
@@ -217,19 +208,7 @@ export const Works: React.FC = () => {
             }
         `}</style>
 
-        {/* Custom Drag Cursor (Desktop) */}
-        <div 
-            className={`hidden md:flex fixed z-[60] w-24 h-24 bg-white rounded-full items-center justify-center pointer-events-none transition-transform duration-200 ease-out mix-blend-difference ${showDragCursor && viewMode === 'carousel' ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`}
-            style={{ 
-                left: cursorPos.x, 
-                top: cursorPos.y,
-                transform: `translate(-50%, -50%) scale(${showDragCursor && viewMode === 'carousel' ? 1 : 0})`
-            }}
-        >
-            <span className="text-black font-black text-sm tracking-widest uppercase">Drag</span>
-        </div>
-
-        {/* Mobile Scroll Indicator Overlay - Changed "Drag" to "Swipe" */}
+        {/* Mobile Scroll Indicator Overlay */}
         <div className={`md:hidden absolute right-6 top-[55%] z-40 pointer-events-none animate-pulse flex items-center gap-2 transition-opacity duration-500 ${viewMode === 'carousel' ? 'opacity-100' : 'opacity-0'}`}>
             <span className="text-xs font-bold uppercase tracking-widest text-white drop-shadow-md">Swipe</span>
             <div className="w-8 h-8 rounded-full border border-white flex items-center justify-center bg-black/30 backdrop-blur-sm">
@@ -334,7 +313,7 @@ export const Works: React.FC = () => {
             </div>
         </div>
 
-        {/* Mobile Controls - Replaced Arrows with Centered Dots */}
+        {/* Mobile Controls */}
         <div className="flex md:hidden justify-center px-6 items-center w-full absolute bottom-8 z-30 pointer-events-none">
             <div className="flex gap-2 pointer-events-auto">
                 {works.map((_, idx) => (
