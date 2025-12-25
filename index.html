@@ -10,11 +10,17 @@
     <link rel="preconnect" href="https://content.dropboxapi.com">
     <link rel="preconnect" href="https://dl.dropboxusercontent.com">
     
-    <!-- Preload the Hero Video -->
+    <!-- Preload the Hero Video (Global Background) -->
     <link rel="preload" as="video" href="https://www.dropbox.com/scl/fi/8n8x2l0ehc1d7fxai8aoh/this-one-took-a-while-inspo-from-scoobafiles-tylerbaileytravel-travel-nature.mp4?rlkey=g4jizjr8vfgqih1z01c9cbeu8&st=aolhwlws&raw=1" type="video/mp4">
+    
+    <!-- Preload the Main Desktop Featured Video (Urban Flow) for Instant Play -->
+    <link rel="preload" as="video" href="https://www.dropbox.com/scl/fi/07gehbamxu1153uwfzu3e/home-.-horizontal.mp4?rlkey=p7lqi0wglmiwsxgy1wy64jbrq&st=g5vajvz6&raw=1" type="video/mp4">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS Engine (Guarantees styles work everywhere) -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         theme: {
@@ -44,10 +50,15 @@
         },
       }
     </script>
+
+    <!-- Essential CSS Fixes -->
     <style>
       body {
         background-color: #050505;
         color: #ffffff;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
       }
       .hide-scrollbar::-webkit-scrollbar {
         display: none;
@@ -56,37 +67,33 @@
         -ms-overflow-style: none;
         scrollbar-width: none;
       }
-      .text-outline {
-        -webkit-text-stroke: 1px rgba(255, 255, 255, 0.2);
-        color: transparent;
+      
+      /* Reset for video elements to prevent layout shift */
+      video {
+        max-width: 100%;
+        height: auto;
       }
-      /* FORCE HIDE NATIVE VIDEO CONTROLS ON iOS/MOBILE */
-      video::-webkit-media-controls {
-          display:none !important;
-      }
-      video::-webkit-media-controls-start-playback-button {
-          display: none !important;
-          -webkit-appearance: none;
-      }
-      video::-webkit-media-controls-play-button {
-          display: none !important;
-      }
-      video::-webkit-media-controls-panel {
-          display: none !important;
-      }
+
+      /* Force hide native video controls on iOS/Mobile */
+      video::-webkit-media-controls { display:none !important; }
+      video::-webkit-media-controls-start-playback-button { display: none !important; -webkit-appearance: none; }
+      video::-webkit-media-controls-play-button { display: none !important; }
+      video::-webkit-media-controls-panel { display: none !important; }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "vite": "https://esm.sh/vite@^7.3.0"
-  }
-}
-</script>
+
+    <!-- Import Map for React -->
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@^19.2.3",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+        "react/": "https://esm.sh/react@^19.2.3/",
+        "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+        "vite": "https://esm.sh/vite@^7.3.0",
+        "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+      }
+    }
+    </script>
 </head>
   <body>
     <div id="root"></div>

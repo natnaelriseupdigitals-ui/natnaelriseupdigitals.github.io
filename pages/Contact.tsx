@@ -1,10 +1,11 @@
 import React from 'react';
 import { Reveal } from '../components/Reveal';
+import { Button } from '../components/Button';
 import { ArrowUpRight } from 'lucide-react';
 
 export const Contact: React.FC = () => {
   return (
-    <div className="bg-orbit-black min-h-screen pt-32 pb-20 flex flex-col justify-center">
+    <div className="bg-orbit-black min-h-screen pt-32 pb-20 flex flex-col justify-center relative z-20">
         <div className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
             {/* Left Info */}
             <div className="order-2 lg:order-1">
@@ -93,10 +94,10 @@ export const Contact: React.FC = () => {
                     </Reveal>
 
                     <Reveal delay={0.6}>
-                        <button className="group relative px-6 py-3 mt-4 border border-white text-white uppercase tracking-widest overflow-hidden w-full md:w-auto">
-                            <span className="relative z-10 group-hover:text-black transition-colors duration-300 font-bold text-sm">Send Request</span>
-                            <div className="absolute inset-0 bg-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
-                        </button>
+                        {/* Updated Button: Removed icon="arrow" to match the solid, non-sliding animation of the Add to Cart buttons */}
+                        <Button variant="primary" fullWidth className="mt-4">
+                            Send Request
+                        </Button>
                     </Reveal>
                 </form>
             </div>

@@ -5,7 +5,8 @@ export enum Page {
   WORKS = 'WORKS',
   ABOUT = 'ABOUT',
   STORE = 'STORE',
-  CONTACT = 'CONTACT'
+  CONTACT = 'CONTACT',
+  CART = 'CART'
 }
 
 export interface WorkItem {

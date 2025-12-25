@@ -1,5 +1,6 @@
 import React from 'react';
 import { Page } from '../types';
+import { Button } from './Button';
 import { Instagram, Youtube, Twitter, Mail } from 'lucide-react';
 
 interface FooterProps {
@@ -15,16 +16,15 @@ export const Footer: React.FC<FooterProps> = ({ setPage }) => {
             <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-6">
               Let's create<br />something unreal.
             </h2>
-            <button 
+            <Button 
+                variant="outline"
                 onClick={() => {
                     setPage(Page.CONTACT);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="group relative px-8 py-4 border border-white text-white uppercase tracking-widest overflow-hidden"
             >
-              <span className="relative z-10 group-hover:text-black transition-colors duration-300 font-bold">Start a Project</span>
-              <div className="absolute inset-0 bg-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
-            </button>
+              Start a Project
+            </Button>
           </div>
           
           <div className="flex flex-col items-start md:items-end">
