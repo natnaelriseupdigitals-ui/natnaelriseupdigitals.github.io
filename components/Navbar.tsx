@@ -5,9 +5,10 @@ import { Menu, X, ShoppingCart } from 'lucide-react';
 interface NavbarProps {
   currentPage: Page;
   setPage: (page: Page) => void;
+  isHidden?: boolean;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentPage, setPage }) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentPage, setPage, isHidden = false }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -35,6 +36,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, setPage }) => {
   return (
     <nav
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
+        isHidden ? 'opacity-0 pointer-events-none -translate-y-full' : 'opacity-100 translate-y-0'
+      } ${
         isScrolled || mobileMenuOpen ? 'bg-orbit-black/90 backdrop-blur-md py-4' : 'bg-transparent py-6'
       }`}
     >

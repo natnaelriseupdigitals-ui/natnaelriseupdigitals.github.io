@@ -49,7 +49,7 @@ export const Store: React.FC<StoreProps> = ({ setPage }) => {
 
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-x-6 md:gap-y-12">
                 {prints.map((product, index) => (
-                    <Reveal key={product.id} delay={index * 0.1}>
+                    <Reveal key={product.id} delay={index * 0.1} fullHeight>
                         <div className="group flex flex-col h-full">
                             <div className="relative overflow-hidden aspect-[4/5] bg-gray-900 mb-4 rounded-2xl border border-white/5">
                                 <img 
@@ -96,7 +96,7 @@ export const Store: React.FC<StoreProps> = ({ setPage }) => {
 
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-x-6 md:gap-y-12">
                 {merch.map((product, index) => (
-                    <Reveal key={product.id} delay={index * 0.1}>
+                    <Reveal key={product.id} delay={index * 0.1} fullHeight>
                          <div className="group flex flex-col h-full">
                             <div className="relative overflow-hidden aspect-[4/5] bg-gray-900 mb-4 rounded-2xl border border-white/5">
                                 <img 
@@ -127,12 +127,28 @@ export const Store: React.FC<StoreProps> = ({ setPage }) => {
                     </Reveal>
                 ))}
                 
-                {/* Coming Soon Card */}
-                 <Reveal delay={0.2}>
-                    <div className="aspect-[4/5] bg-gray-900 border border-white/10 flex flex-col items-center justify-center text-center p-4 md:p-8 rounded-2xl h-full">
-                        <ShoppingCart size={32} className="text-gray-700 mb-4 md:w-12 md:h-12" strokeWidth={1} />
-                        <h3 className="text-sm md:text-xl font-bold text-gray-500 uppercase tracking-tight">More Soon</h3>
-                        <p className="text-[10px] md:text-xs text-gray-700 uppercase tracking-widest mt-2 hidden md:block">Sign up for notifications</p>
+                {/* Coming Soon Card - Structure perfectly mimics product card to ensure exact sizing on all devices */}
+                 <Reveal delay={0.2} fullHeight>
+                    <div className="flex flex-col h-full select-none">
+                        {/* Placeholder Image Area */}
+                        <div className="relative overflow-hidden aspect-[4/5] bg-gray-900/20 mb-4 rounded-2xl border border-white/5 border-dashed flex flex-col items-center justify-center">
+                             <ShoppingCart size={24} className="text-gray-700 mb-3 md:w-10 md:h-10" strokeWidth={1} />
+                             <span className="text-[10px] md:text-xs font-bold text-gray-600 uppercase tracking-widest">Coming Soon</span>
+                        </div>
+                        
+                        {/* Placeholder Details Area */}
+                        <div className="flex flex-col md:flex-row justify-between items-start mb-3 md:mb-4 opacity-50">
+                            <div className="mb-1 md:mb-0">
+                                <h3 className="text-sm md:text-lg font-bold text-gray-500 uppercase tracking-tight mb-1">Stay Tuned</h3>
+                                <p className="text-[10px] md:text-xs text-gray-700 uppercase tracking-widest">New Collection</p>
+                            </div>
+                            <span className="text-xs md:text-base text-transparent font-mono">--</span>
+                        </div>
+
+                        {/* Spacer for Mobile Button Alignment (Invisible Button) */}
+                        <div className="md:hidden mt-auto invisible pointer-events-none">
+                            <Button variant="primary" fullWidth className="py-2 px-2 text-[9px]" onClick={() => {}}>Add</Button>
+                        </div>
                     </div>
                  </Reveal>
             </div>

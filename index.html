@@ -5,21 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CIAN CINEMATIC | Premium Creative Studio</title>
     
-    <!-- Preconnect to Dropbox for faster video loading -->
-    <link rel="preconnect" href="https://www.dropbox.com">
-    <link rel="preconnect" href="https://content.dropboxapi.com">
-    <link rel="preconnect" href="https://dl.dropboxusercontent.com">
+    <!-- Preconnect to YouTube -->
+    <link rel="preconnect" href="https://www.youtube.com">
+    <link rel="preconnect" href="https://www.google.com">
     
-    <!-- Preload the Hero Video (Global Background) -->
-    <link rel="preload" as="video" href="https://www.dropbox.com/scl/fi/8n8x2l0ehc1d7fxai8aoh/this-one-took-a-while-inspo-from-scoobafiles-tylerbaileytravel-travel-nature.mp4?rlkey=g4jizjr8vfgqih1z01c9cbeu8&st=aolhwlws&raw=1" type="video/mp4">
-    
-    <!-- Preload the Main Desktop Featured Video (Urban Flow) for Instant Play -->
-    <link rel="preload" as="video" href="https://www.dropbox.com/scl/fi/07gehbamxu1153uwfzu3e/home-.-horizontal.mp4?rlkey=p7lqi0wglmiwsxgy1wy64jbrq&st=g5vajvz6&raw=1" type="video/mp4">
-
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS Engine (Guarantees styles work everywhere) -->
+    <!-- Tailwind CSS Engine -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -68,17 +61,10 @@
         scrollbar-width: none;
       }
       
-      /* Reset for video elements to prevent layout shift */
-      video {
+      /* Reset for video elements */
+      video, iframe {
         max-width: 100%;
-        height: auto;
       }
-
-      /* Force hide native video controls on iOS/Mobile */
-      video::-webkit-media-controls { display:none !important; }
-      video::-webkit-media-controls-start-playback-button { display: none !important; -webkit-appearance: none; }
-      video::-webkit-media-controls-play-button { display: none !important; }
-      video::-webkit-media-controls-panel { display: none !important; }
     </style>
 
     <!-- Import Map for React -->

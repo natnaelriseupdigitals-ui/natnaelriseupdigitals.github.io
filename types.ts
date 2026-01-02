@@ -14,7 +14,7 @@ export interface WorkItem {
   title: string;
   category: string;
   imageUrl: string;
-  videoUrl?: string; // Optional video preview
+  videoId?: string; // Updated from videoUrl to match YouTube implementation
   size: 'small' | 'medium' | 'large' | 'tall';
 }
 
